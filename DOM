@@ -1,0 +1,152 @@
+
+□ 基本用語
+  ・Node
+    DOM内の各要素のこと
+    （例）DOM内のhtml, title, body, h1...
+    
+
+
+□ DOM操作
+
+    .DOM要素の取得
+
+        document.getElementById('ID名称')  
+
+
+        document.getElementByClassName("クラス名")
+
+
+        document.querySelector('セレクター名')
+            (例) .querySelector('h1')
+            (注意)querySelectorが取得するセレクターは最初に取得した １つ の要素のみ
+            (注意)セレクターではなく ID の場合は '#IDの名称'にすること
+
+
+        dcument.querySelectorAll('セレクター名')[インデックス番号]
+            (注意)querySelectorとは異なり引数のセレクターに該当したセレクターを 全て 取得する
+
+
+    ・クラス要素に対する処理
+
+        .DOM要素の変更(#classListは取得したクラスのオブジェクト)
+
+            .classList.insertAdjacentHTML(挿入位置, 挿入するテキスト)
+                DOM要素の挿入
+                （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    HTML
+                    beforebegin(指定した要素の直前)
+                    <div id="contentBlock">
+                        afterbegin(指定した要素内にある最初の子要素の直前)
+                        <button id="clickButton">Click Here</button>
+                        beforeend(指定した要素内にある最初の子要素の直後)
+                    </div>
+                    afterend(指定した要素内にある最初の子要素の直後)
+
+                    JavaScript
+                    const contentBlock = document.getElementById('contentBlock');
+                    contentBlock.insertAdjacentHTML('beforeend', "挿入完了");
+
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+            ・Node.classList.innerHTMl("クラス名")
+                DOM要素の置換
+
+
+            ・Node.classList.add("クラス名")
+                DOM要素の追加
+
+
+            ・Node.classList.remove("クラス名")
+                DOM要素の追加
+
+
+
+    ・HTML要素に対する処理
+
+            ・document.createElement("html要素");
+                DOMツリーにhtml要素を追加する（どこに挿入するか決まっていないことに注意）
+
+
+            ・(親)element.appendChild("追加するhtml要素のNode");
+                レセプター(親要素)の末にhtml要素追加
+                （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                document.addEventlistener("turblinks:load", ()=>{
+                    document.addEventlistener("click", ()=>{
+                        ##  html要素の作成
+                        const li = document.createElement("li");
+                        const ul = document.querySelector("ul");
+                        ## 定数li要素のテキスト部分にテキスト追加い
+                        li.textContent = "ここの部分をテキスト追加する";
+                        ##  子要素の追加
+                        ul.appendChild("li");
+                    })
+                })
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+            ・element.cloneNode(true);
+
+
+            ・(親)element.removechild("削除したいNode")
+
+    
+    ・１入力されたテキストへの操作
+
+            •(テキストNode).value;
+                テキストに書き込まれた値の入手
+                #   value属性に値がある場合はそちらが使用される
+
+            •(テキストNode).focus();
+                テキスト欄へのカーソル当て
+
+            ・
+
+
+        
+    
+    ・イベント処理
+        イベント処理は後に書いても上書きされないので、同時に処理を行うことも可能
+
+        ・対象内容.addEventlister("イベント内容", 関数, オプション)
+            「対象内容」が「イベント内容」されたときに、「関数」を実行する
+            （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    const btn = document.getElementById("btn");
+                    btn.addEventlistener("click", function(){
+                    console.log("クリックされました")；
+                    }
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+                ・イベント内容
+
+                    ・click
+                    ・dblclick
+                    ・input                 テキストが入力されている間
+                    ・change                テキストが入力し終えたら
+                    ・submit                送信ボタン
+                    ・mousemove
+                    ・scroll
+                    ・keydown
+                    ・focus
+                    ・blur                  フォーカスを外した時のイベント
+                    ・load                  webページが読み込まれたとき
+                    ・DOMContentLoaded      htmlを構成するDOMが形成されたら発動するので早く使用頻度が高い
+                    ・turbolinks:load       上記よりこちらを使用することが多い
+                    ・
+
+                （例）~~~  input  (文字の入力数に便利)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    document.addEventListener("turbolinks:load", function(){
+                        const text = document.getElementById("chat-field");
+                        const count = document.getElementById("count")
+                        document.addEventListener("input", (e)=>{
+                            if (text.value.length === 0){
+                            count.textContent = "";
+                            }else{
+                            count.textContent = `${text.value.length} 文字入力中`;
+                            }
+                        })
+                    })
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+                ・オプション
+
+                    ・passive: false    preventDefault()を有効化する時によく使用する

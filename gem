@@ -1,0 +1,53 @@
+・  haml
+     # hamlの導入
+      gem "haml-rails"
+
+
+・  slim
+     # slimの導入（ジェネレータ）
+      gem "slim-rails"
+
+
+     # erbファイル から slimファイルへの変換
+       gem "html2slim"
+     # 既に生成済みのerbファイルの変換コマンド
+       bundle exec erb2slim app/views/layouts/ --delete
+
+
+・  bootstrap
+    # bootstrapの導入
+      gem "bootstrap"
+
+
+・  rails_best_practice
+     # rails_best_practiceの導入
+       gem "rails_best_practices"
+
+
+・  bcrypt
+      # パスワードの暗号化(Railsにデフォルトでコメントアウトされているのでそちらを使用する)
+        gem 'bcrypt', '->3.1.7'
+
+
+・  Ransack
+      # 検索機能
+        gem "ransack"
+
+
+・  kaminari
+      # ページネーション
+        gem "kaminari"
+
+        
+########### テスト関係 ############################## 
+・  RSpec
+      # RSpec導入(:test直下)
+        gem "rspec-rails", "~>3.7"
+      #RSpecファイルの生成
+        rails g rspec:install
+・  FactoryBot
+      # FactoryBot（テストデータ作成支援ツール）（:development,:test直下）
+        gem "factory_bot_rails"
+・  Faker
+    # ダミーデータの生成
+      gem 'faker'

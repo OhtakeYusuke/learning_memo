@@ -1,0 +1,158 @@
+□ Railsコマンド
+        ・bundle install オプション
+        ・ --path vendor/bundle     プロジェクト内だけに gem を適応させたい場合のオプション
+
+		・rails new アプリケーション名  オプション
+        ・オプション
+            -d データベース名 （データベースの設定）
+            -t テスト削除
+            --skip-coffee   coffeescript の生成を制御
+
+
+        ・rails routes オプション
+        ・オプション
+            ・| grep 指定したいルーティング     これで指定したルーてキングのパスのみ見れる
+
+
+		・rails c オプション
+        ・オプション
+            -s （sandboxモード）
+
+    ・rails g ジェネレータ名  オプション
+        ・ジェネレータ名
+            ・controller  （コントローラ名）
+            ・model
+            ・mailer
+            ・migration
+            ・
+            ・
+
+    ・rails db:処理名
+        ・処理名
+            ・migrate
+            ・rollback
+            ・reset
+            ・drop
+            ・
+            ・
+
+□ ルーティング設定
+    • 基本形(省略型)
+        HTTPリクエストメソッド "/URL" ,  to : "コントローラ名 # アクション名" 
+
+    • トップページの設定
+        ・ （HTTPリクエストは不要）root to: " コントローラ名 ＃ アクション名 "
+
+    • resourcesの設定
+    (注意)	
+        ・resources :コントローラ名
+        ・resourcesを使用しないときの、URLヘルパーメソッドは変化するに注意
+
+        ・resources でネストするときはそのモデルの主キーが不要な場合
+
+            ・基本アクションが必要名場合
+            ・resources でネストした resource は単数系
+
+            ・基本アクション以外の追加
+                ・ オプション
+                    ・ on: : (collection, member)
+                    ・ on: : (既存アクション下におきたい場合は既存アクションを記述)
+                    ・ action: :アクション名
+                    ・ controller: :コントローラ名
+
+
+□ Scaffld機能
+    ・アプリケーション生成後に rails g scaffold モデル名 オプション で生成可能
+    ・再度アプリケーションを再起動する必要がある
+
+
+□ form_with
+    (使用可能オプション)
+    ・url
+    ・local ※意味はわかっていない
+    ・data
+    ・method
+    ・scope
+
+    (使用可能メソッド)   ※ =が必要
+    ・label
+    ・text_area
+    ・text_field
+    ・password_field
+    ・submit
+    ・hidden_field
+
+            (メソッドでのオプション)
+            ・autofocus:  boolean
+            ・placeholder: ""
+            ・
+            ・
+
+
+□ redirect
+    ・  _to
+        (使用可能オプション)
+        ・url
+        ・notice
+
+    ・  _back
+        ・直前のページにバックする場合
+        ・redirect_back fallback_location: モデルやURLなど
+        （例）redirect_back fallback_location: root_path
+        
+
+□ render
+    (使用可能オプション)
+    ・action
+    ・partial
+
+
+□ simple_format
+    ・入力内容の開業などを そのまま 反映してくれるヘルパーメソッド
+    (例) simple_format(@post.description)
+
+
+□ gitignore
+    ・Githubへ不要ファイルを送信しない方法
+        .DS_Store
+        /vendor/bundle
+□ ジェネレーターの制御
+    ・config/initializers/generators.rb を新規作成
+    ・ファイル内に記述
+        Rails.application.config.generators do |g|
+            g.skip_routes true
+            g.assets false
+            g.helper false
+        end
+□ Active Job
+    ・Active Job の有用性
+        メール送信や請求書発行などをバックグラウンドで実行することが可能。
+        ActiveJobを利用することで、重たい処理（＝時間のかかる処理）を非同期的に実行することができるようになる。
+
+
+    ・Active Jobの生成
+        rails g job ジョブ名
+        （例）rails g job MessageBroadCast
+
+
+    ・Active Job の発火
+        処理を行いたいファイル内にて Job名.perform_later（引数）
+        (例)MessageBroadCast.perform_later(self)
+        これは message_broad_cast.rb ファイルの performメソッド を発火する記述
+□ controller
+    ・formatの形式ごとの分岐
+        respond_to do |format|
+            format.html {HTMLでの処理内容}
+            format.json {jsonでの処理内容}
+        end
+        
+□ seeds
+    ・rails db:seed
+
+
+    ・rails db:reset
+
+
+□ マイグレーション ファイル
+    ・マイグレーション ファイル追加時
+        add_column :message, :content, :text

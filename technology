@@ -1,0 +1,922 @@
+□ StrongParams
+    ・params.require(: モデル名 ).permit(: 属性の値 )
+    ・送られてきた値以外を使用する場合はmergeメソッド  #ex# .merge(user_id: session[:id])
+
+
+□ 部分テンプレート
+
+    ・インスタンス変数の中身が”単数”の場合
+        ・render partial: "ファイル名" locals: { 原本の変数名: 配布先の変数名（インスタンス変数） }, オプション
+            （例）render partial: "form", {post: @post}
+            ・オプション
+                ・button_value： ボタン名 で各ボタン名を指定できる
+
+        ・省略系
+            ファイル名とインスタンス変数名が一致しているとき  render インスタンス変数
+            （例）render @post
+
+
+    ・インスタンス変数の中身が”複数”の場合
+        ・単数とは違い、インスタンス変数の中に複数のインスタンスが格納されている場合は、each文になっている
+        ・ render partial: "ファイル名", locals: {原本の変数名:  配布先の変数名（インスタンス変数）}, オプション
+            colletion オプションはインスタンス変数の要素分テンプレートを繰り返し表示することができる
+
+        ・省略系
+            ファイル名とインスタンス変数名（単数系の形で一致している場合）が一致しているとき  render インスタンス変数
+            （例）render @posts
+
+
+□ バリデーション
+
+    ( 【既存型】バリデーション)
+        ・ validates :カラム名 , 制限内容
+            （使用できる制限内容）
+                ・ presence:
+                ・ length: オプション
+                    ・オプション
+                        {maximum: integer}
+                        {in: range}
+                        {is: inreger}
+                ・ uniqueness:
+                ・ numericality:  オプション    整数もしくは浮動小数点のみ
+                    ・オプション
+                        boolean
+                        {only_integer: boolean} 整数のみ指定
+                        {greater_than: integer} 数字の範囲指定
+                
+                ・ inclusion: {in: 0..130}  数字の範囲
+
+                ・
+                ・
+                ・
+
+        ・メッセージ付加
+            ・{message: メッセージ内容} バリデーションエラー時のメッセージ
+            
+
+    ( 【オリジナル】バリデーション )
+    • validate : メソッド名
+
+
+    ・ エラーメッセージの搭載
+        <% post.errors.full_messages.each do |message| %>
+          <%= message %>
+        <% end %>
+
+
+□ コールバック
+    • コールバック名 :メソッド名 , オプション
+        (使用できるオプション)
+          ・ only: [ : アクション名 ]
+          ・ except: [ : アクション名 ]
+        （使用できるコールバック）
+          ・ before_validation
+
+
+□ フック
+    ・コントローラ内の共通処理の書き出しによる共通化
+
+    ・組み立て方法
+      １~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        before_action :set_id
+
+        def set_id
+          処理内容
+        end
+
+      ２~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        before_action do
+          処理内容
+        end
+
+
+
+□ ユーザへのバリデーションエラーの通知
+    ・ モデル名 .errors にエラーメッセージが格納されている
+
+    ・表示
+      ・ モデル名 .errors .full_massages.each do |message|
+
+
+□ flashメッセージ
+    ・controllerでの設定
+      ・redirect_to のオプションとして使用
+
+    ・viewでの表示
+      ・flash.notice
+
+    ・ビューでの便利な書き方
+
+
+
+□ ログイン機能（自作）
+
+    .ログイン設定
+      ・ログイン ログアウト用のコントローラ作成
+    
+    ・ログアウト
+      ・ログアウト画面への誘導 #ex# session_path(current_user)
+      ・セッションアウト reset_session
+
+    • その他設定
+      ・session[ : セッション名 ]
+      ・ログインの有無による、コールバック設定
+
+
+□ ログイン機能（devise）
+
+    ・ログイン機能実装手順
+        1. gemの導入。gem "devise"適応
+
+        2. ログイン機能に必要なファイルを生成。
+          rails g devise:install
+
+        3.  devise専用コマンドでログイン機能に対応したモデルを生成
+          rails g devise モデル名
+
+        # 確認メール送信機能（Confirmable）、パスワード再設定機能の有無（Recoverable）などのデフォルト設定をする場合は
+          マイグレーションを実行する前に、マイグレーションファイル内の記述を再編成
+
+        4. ローカルサーバに移動し、アカウント登録のURLで最初のログインを行う
+          （よくある例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              email     test@example.com
+              password  password
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        # ログイン周辺のルーティングを確認
+
+        # ログインページの日本語化
+            1. gemfileにて gem "rails-i18n", "~>6.0" 
+                          gem "devise-i18n"
+              を導入し適応
+            2. config/application.rbファイルにて内容記述（記述後は必ずサーバ再起動）
+              （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    module LikeApp
+                      class Application < Rails::Application
+                        config.load_defaults 6.0
+                        # ***** 以下を追加 *****
+                        config.i18n.default_locale = :ja
+                        config.time_zone = 'Asia/Tokyo'
+                        # ***** 以上を追加 *****
+                        # 略
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        # ビュー変更
+            ・ビューファイルを変更するには device用のビューファイルを生成する必要がある。
+              rails g devise:i18n:views
+              
+              ＃ このとき i18n を適応させたくないときは i18n を抜いて記述する
+
+        # ログインのためのモデルと同じ名称のusersコントローラなどを使用するときは気にせず記述しても問題ない
+
+
+        # コントローラの変更
+            ・rails g devise:controllers コントローラ名（大抵はusers）
+
+            ・ルーティングの設定
+              ~~~~~テンプレシート~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              devise_for :users, :controllers => {
+                :registrations => 'users/registrations',
+                :sessions => 'users/sessions'   
+              } 
+
+              devise_scope :user do
+                get "sign_in", :to => "users/sessions#new"
+                get "sign_out", :to => "users/sessions#destroy" 
+              end
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    ・ devise専用メソッド
+        ※ user部分はモデル名になるのでモデル名に合わせる
+
+        ・authenticate_user!メソッド
+          ログインしていないユーザをトップページにリダイレクトさせるメソッド
+          （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                before_action :authenticate_user!, except: [:index]
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        ・user_signed_in?ヘルパーメソッド
+          ログインの有無を返すメソッド
+
+        ＃current_user は現在サインインしているユーザ情報が格納されている。
+
+        •device_controller?メソッド
+          ログイン機能を使用したときの有無で真偽値を返す
+
+
+        ・configure_permitted_parametersメソッド
+          ストロングパラメーターを追加したい場合に使用
+          
+
+
+    ・ ログイン時に他のカラムも登録したい場合の手順
+          1. マイグレーション ファイルを生成
+          （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                rails g migration AddColumnNickname nickname:string
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+          2. ログイン用のビューが生成されていたら、新しいカラムの入力欄を作成
+
+
+          3. 追加メソッドを保存できるようにする（StrongParameterも適応）
+          （例）~~~ nicknameを追加  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                app/controllers/application_controller.rb ファイルにて
+
+                class ApplicationController < ActionController::Base
+                  # ***** 以下を追加 *****
+                  before_action :configure_permitted_parameters, if: :devise_controller?
+
+                  def configure_permitted_parameters
+                    devise_parameter_sanitizer.permit(:sign_up, keys: [:nickname])
+                    devise_parameter_sanitizer.permit(:account_update, keys: [:nickname])
+                  end
+                  # ***** 以上を追加 *****
+                end
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+□ devise機能によるメール認証機能
+    ・ モデルの設定
+        ・deviseで  :confirmable を追加
+
+    ・  使用するメールアドレスの設定
+        ・config/initializers/devise.rbファイルにて、
+        （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            donfig.mailer_sender = "使用するメールアドレス"
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+    ・  メール送信用サーバの設定
+        ・config/envirionments/development.rb にて下記を記述
+        （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+            config.action_mailer.raise_delivery_errors = true
+            config.action_mailer.delivery_method = :smtp
+            config.action_mailer.smtp_settings = {
+              :enable_starttls_auto => true,
+              :address => "smtp.gmail.com",
+              :port => 587,
+              :domain => 'smtp.gmail.com',
+              :user_name => "メールアドレス",
+
+              # Gmailログイン用のパスワード ##########
+              # ２段認証にしていたらアプリパスワードを入手してくる
+              :password => "パスワード",
+              :authentication => 'login'
+            }
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+    ・  送信するメールの内容の設定
+        ・それぞれの設定ファイル
+          confirmation_instructions.html.erb	ユーザー登録をした時
+          password_change.html.erb	パスワード変更が完了した時
+          reset_password_instructions.html.erb	パスワードを忘れた時
+          unlock_instructions.html.erb	アカウントがロックされた時
+
+
+□ パスワードの暗号化
+    ・設定
+      ・テーブルカラムに password_digest を追加
+      ・gem "bcrypt" 導入(デフォルトでコメントアウトされている)
+      ・モデルファイルに has_secure_password を追加 
+        (追加されるカラム２つ password, password_confirmation と 
+        メソッド authenticate の存在と理由を知っている )
+        (例) authenticate(session_params[:password])
+
+
+□ 自作のヘルパーメソッド作成（ メソッドの合成 や 条件付きメソッド ）
+      •設定
+          ・「ApplicationControllerファイル」
+              helper_method :作成したいヘルパーメソッドのメソッド名
+      
+      ・使用具体例
+          ・ ログイン時の id 格納
+
+
+□ 自作のデータ検索絞り込み scope の作成 
+      ・設定
+          ・ scope :メソッド名, -> {各絞り込みメソッド}
+
+
+□ モデルの関連づけ (1 : 多)
+      •設定
+          ・外部キーの設定
+              （モデル生成時での設定の場合）
+                rails g model 子要素のモデル名  親テーブル名の「単数」形 : reference
+                (例)  rails g model Like user:references post:references
+              （既にモデルを生成している場合）
+                「マイグレーションファイル生成後の マイグレーションファイルにて」
+                add_reference :子テーブルの「複数」形 ,  :親テーブルの「単数」形 , foreign_key: true 
+
+          ・モデルでの親テーブル、子テーブルごとの設定
+              「 親 テーブルのモデルファイル」
+              ・has＿many :子テーブルの「複数」形, dependent: :destroy
+
+              「 子 テーブルのモデルファイル」
+              ・belongs_to :親テーブルの「単数」形
+
+
+□ モデルの関連づけ (多 : 多)
+      •設定
+          ・中間テーブルの作成
+          （例）rails g model Like user:references post:references
+          ・各のモデルに設定
+          ・親テーブルの中間を介さない関連づけ設定を、両端のモデルに新たに設置
+            has_many :子要素のモデル名 , through: :中間テーブル名（複数形） , :source: :相手テーブル名（単数系）
+            ※ 正確には through の後は、中間テーブルとの関連付けに使用したメソッド名
+            (例)has_many :liked_posts, through: :likes, source: :post
+
+
+□ データの絞り込み（SQLクエリ）
+      ・絞り込み条件（使用できるオプション）
+          ・where
+          ・order(カラム名: :desc(:asc))
+          ・all
+          ・group ☆
+          ・limit ☆
+          ・
+
+      ・実行部分（使用できるオプション）
+          ・find
+          ・find_by
+          ・first
+          ・last
+          ・count
+          ・maximum
+          ・minimum
+          ・
+          ・
+
+
+□ 翻訳機能
+    ・（参考ガイド）https://railsguides.jp/i18n.html
+    ・ 設定
+        ・（翻訳ファイルの配置）
+          config/localesディレクトリ下で ja.yml ファイルを作成して 
+          https://raw.githubusercontent. com/svenfuchs/rails-i18n/master/rails/locale/ja.yml から参考ファイルをコピペ
+
+        ・ （標準言語の設定）
+          config/initializersディレクトリ下で locales.rb ファイルを作成して
+          Rails.application.config.i18n.default_locale = :ja
+          を記述
+
+    ・ ユーザごとの言語切り替え
+
+
+□ タイムゾーンの設定
+    ・  ユーザに表示される時間を日本時間に合わせる変更
+        config/application.rbファイルにて
+        config.time_zone = "Asia/Tokyo" を記述
+    
+    ・  データベースに保存される時間を変更
+
+
+    ・  便利なメソッド
+        ・  Date.current(現在時刻を表示)
+
+
+□ 確認画面の設定
+    ・  ルーティング設定
+          ・resources 使用時のアクション追加に注意
+          (例)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              resources :posts do
+                post "confirm", on: :new  
+              end
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    ・  コントローラ設定
+          ・確認用アクションの追加
+          ・戻るボタン設定時のparamsの受け取り
+          (例)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              def confirm
+                @post = Post.new(post_params)
+                render :new unless @post.valid?
+              end
+
+              def create
+                @post = Post.new(post_params)
+                if params[:back].present?
+                  render :new
+                  return
+                end
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+    ・  ビュー設定
+          ・URLの設定
+          ・登録ボタン、戻るボタンの区別設定（name属性の値に注意）
+          ・formヘルパーメソッド hidden_field の適応
+
+
+□ 検索機能（ransack）
+    ・ インストール設定
+        ・gem "ransack" の適応
+
+    ・コントローラ設定
+
+        ・慣習的な書式
+              ・  @qは検索フォームのパラメータの受け取りの変数に使用される
+              ・  params[:q]は受け取ったパラメータの値の慣習的な書き方
+
+        ・検索フォームのパラメータの受け取り
+              ransack(params[:q])
+              （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                @q = User.ransack(params[:q])
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        ・検索結果の反映
+              result(distinct: true)
+              （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                @user = @q.result.page(params[:page]).per(PER_PAGE)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+    ・ビュー設定
+        ・検索フォームの作成
+              ・search_form_for フォームヘルパー
+              （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                <%= search_form_for @q do |f| %>
+                  <%= f.label :name_cont, "氏名" %>
+                  <%= f.search_field :name_cont %>
+                  <%= f.label :age_eq, "年齢" %>
+                  <%= f.search_field :age_eq %>
+                  <%= f.submit "検索" %>
+                <% end %>
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        ・検索入力欄の設定
+              ・search_field フォームヘルパーメソッド
+              ・placeholder
+
+        ・検索項目の設定
+              属性名＿検索マッチャ
+              【検索マッチャ】
+                ・cont
+                ・lt
+                ・gt
+                ・lteq
+                ・gteq
+
+    ・検索のセキュリティ
+
+
+□ ソート機能（ransack）
+    ・  ビューでの設定
+        ・  sort_link (@q , :カラム名 , 並べ替えオプション)
+        
+        ・  並べ替えオプション
+            ・デフォルトの昇降順
+                default_order: :昇降コマンド
+            ・複合的に使用できるソート機能
+                [:カラム名① ,  "カラム名② 昇降コマンド"]
+
+
+□ ページネーション機能（kaminari）
+    ・  準備
+        gem "kaminari"  を適応
+        kaminari用の翻訳ファイル
+        kaminari用のデザインテンプレート
+            rails g kaminari:views デザインテンプレート名
+            https://github.com/amatsuda/kaminari_themes
+    
+    ・  コントローラ設定
+        表示用インスタンス変数  ＝ •••  .page(params[:page]) .per(１ページあたりに表示したい数)
+
+    ・  ビュー設定
+        ・ページ番号とページ移動リンク
+            paginateヘルパー  paginate 表示用インスタンス変数
+              （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  paginate @users
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        ・ページ内の投稿数
+            page_entries_infoヘルパー   page_entries_info 表示用インスタンス変数
+              （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  page_entries_info @users
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+□ メイラー機能
+    ・準備
+        ・ターミナルで Mailer を作成。rails g mailer メイラー名（ 例 TaskMailer ）
+        ・動作確認用の gem を導入。 mailercatcher
+        ・開発環境、本番環境ごとのSMTPサーバの利用を変更
+
+    ・メイラーの設定
+        ・メール作成メソッドの作成
+            ・mailerファイルにて送信のデフォルト設定
+            ・mailメソッド
+            （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                default from: 送信元のアドレス
+
+                def creation_mail(task)
+                  @task = task
+                  mail(
+                    subject: "投稿完了メール"
+                    to: ユーザのメールアドレス
+                    from: 送信元のアドレス
+                  )
+                end
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    ・テンプレートの設定
+        ・views/クラス名 ディレクトリに メソッド名.html.erb ファイルを作成
+            ・html形式
+            ・text形式
+    
+    ・コントローラの設定
+        ・アクション内にメール送信の処理を作成
+            メイラークラス名  .メイラー内メソッド .メール送信用のメソッド
+              ・メール送信用のメソッド
+                ・  deliver_now
+                ・  deliver_late
+
+
+□ パンくずリスト
+    ・設定
+        ・gem "gretel"  を適応
+        ・設定ファイルの生成
+            rails g gretel:install
+        ・configディレクトリ下に breadcrumbs.rb が生成されたのを確認
+
+    ・config/breadcrumbs.rb でのパンくずリストの設定
+
+          ・ 基本構成
+            crumb : パンくずの名前  do  (必要なら)｜ブロック変数｜
+                link  "表示用の名称" ,  URLパス
+                (必要なら) parent :親のパンくずの名前,  （親の指定ができるように必要なら）parentの情報が格納されている変数 
+            end
+
+          例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            crumb :root do
+              link "Home", root_path
+            end
+
+            # 投稿一覧ページ
+            crumb :posts do
+              link "投稿一覧", posts_path
+            end
+
+            # 投稿詳細ページ
+            crumb :show_post do |post|
+              link post.name, post_path(post)
+              parent :posts
+            end
+
+            # 投稿編集ページ
+            crumb :edit_post do |post| do
+              link "編集", edit_podt_path
+              parent :show_post, post
+            end
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            ・parentの第１引数にモデルが関与するなら、第２引数にモデルを特定できる変数を入れる
+
+
+    ・ビューでの設定
+
+          ・ layout/application.html.erb での設定
+                ・ パンくずリストを表示したい位置に <%= breadcrumbs separator: "&rsaquo;"%>
+
+          ・ 各ビューファイル
+                ・ <% breadcrumb :パンくずの名前, (必要なら)モデルを特定できる変数 %>
+                （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    # 詳細ページにて
+                    breadcrumb :show_post, @post
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                ・この第２引数に書いた変数が、config/breadcrumbs.rb ファイルのブロック変数に代入される
+
+
+□ CSVエクスポート（ユーザ用）
+    ・準備
+        ・CSV形式のデータを取り入れるためにRubyのライブラリにある gem "csv" を適応させる
+
+    ・ビューの設定
+        ・formatの形式が異なるのでformatの形式を変えたリンクを作成する
+        （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            link_to "リンク名" , posts_path(format: :csv)
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    ・コントローラの設定
+        ・html形式とCSV形式でのリクエストごとの対応を respond_toメソッドで対応
+        （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            respond_to do |format|
+              format.html
+              format.csv { 送信するデータ名( (例)@post.generate_csv ) , オプション}
+                          ※ オプション
+                            filename: :ファイル名 がよく使用される 
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+        ・送信データを生成する クラスメソッドを作成
+          （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            HEAD_COLUMNS = ハッシュのキーとなる配列 .freeze ((例) ["name", "age", "email"])   
+
+            def クラスメソッド名（ （例）self.generate_csv ）
+              CSV .generate do |csv|
+                csv << HEAD_COLUMNS
+                all.each do |foo|
+                  csv << HEAD_COLUMNS .map do |columns|
+                    foo.send(columns)
+                  end
+                end
+              end
+            end
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+□ CSVインポート（ユーザ用）
+    ・準備
+        ・CSV形式のデータを取り入れるためにRubyのライブラリにある gem "csv" を適応させる
+    
+    ・モデル設定（コントローラが重くなるので、データ関連なのでモデルに記述）
+        ・ insert_all を利用したインポートファイルのハッシュ化
+        （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            CSV_COLUMNS = データベースのカラムの配列 .freeze
+
+            def self.import_csv(file:)
+              now = Time.current
+              timestamp_attributes = { created_at: now, updated_at: now}
+
+              list = []
+              CSV.foreach(file.path, headers: true) do |row|
+                list << row.to_h.slice(*CSV_COLUMNS).merge(timestamp_attributes)
+              end
+
+              モデル.insert_all(list)
+            end
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            # to_h で配列をハッシュ化 
+            # ハッシュに対する slice(引数) で引数の中にハッシュのキーを入れることで
+              入れたキーと値のみをハッシュとして返す
+            # insert_all によってデータの数だけのSQLを発行せず、まとめて１回の処理で済ませられる
+              しかしtime関連のカラムは入らないのでこちらで入力設定
+
+    ・コントローラ設定
+        ・  インポート処理（モデルへの入力はモデルに記述）
+        （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            def アクション名
+              モデル.import_csv(file: params[:file]) if params[:file].present?
+              redirect_to URLパス
+            end
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    ・ビューの設定
+        ・インポート用のリンク作成
+        （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            form_with url: urlパス, do |f|
+              f.file_field :file , accept: "text/csv"
+              f.submit "インポート"
+            end
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            # accept: ファイル形式 で送信可能なファイルの指定が可能
+
+□ rails_best_practice
+    ・準備設定
+        ・gem 'rails_best_practices'  を適応
+    
+    ・使用方法
+        ・bundle exec rails_best_practices オプション
+        ・オプション
+            ・  . でRailsアプリ全体の指定
+            ・  -f 識別子 .  で識別子に指定したファイル全体の指定
+    
+    ・メッセージの読み取り
+        ・Law of Demeter
+            →デメテルの法則に反している
+        ・Remove Empty Helper
+            →不要なhelperファイルが存在している
+        ・Restrict auto-generated routes
+            →使用していないルーティングが存在している
+
+□ デメテルの法則（delegate）
+    ・  使用目的
+        ・  メソッドチェーン（（例）@post.user.name）を簡略化してアプリケーションの設計やメンテナンスを開花するため
+    
+    ・  使用方法例
+        ・  delegate  :カラム名, to: :モデル名, prefix: true オプション
+            →これによって モデル名＿カラム名として使用できる
+        （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            delegate :name, to: :user, prefix: true
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            ・これによって今まで @post.user.name だった記述が @post.user_name で使用可能になった
+            ・to: の部分でモデルが userであることを定義
+            ・prefix: trueの部分でメソッド名の接頭語をモデル名と認識させている
+            ・上記例は下記と同じ
+                def user_name
+                  user.name
+                end
+        
+        ・オプション
+            ・allow_nil: true
+                ・該当のモデルがnilでもエラーで返すのではなく、nilとして返してくれる例外処理
+
+
+□ 管理者機能（Gemなし）
+    ・管理者権限として使用したいモデル（大抵はUserモデル）のカラムに boolean値になるカラムを追加作成
+        ・デフォルトのカラム値を false にしておくこと
+        ・カラム名には、admin や administrator にすることが多い
+    
+    ・管理者のデータを登録
+        ・開発用seedデータと、本番用seedデータを分けると良い
+
+    ・ルーティングの設定
+        ・名前空間を使用する
+        ・基本構成
+            namespace :名前空間名 do
+              resources :管理したいコントローラ名, オプション
+              # 管理したいコントローラが管理者以外でも使用するなら名前空間外にも記述しておく
+            end
+            （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  namespace :admin do
+                      resources :posts, only: [:index]
+                  end
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    ・コントローラの設定
+        ・ファイル名は 名前空間名/コントローラ名＿controller
+        ・クラスが名前空間に属しているように記述する
+            (例)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                class Admin::PostController < ApplicationController
+                end
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        ・管理者のみがアクセスできるように、アクセス制限をつける
+            (例)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                before_action :admin_check
+                
+                def admin
+                  redirect_to root_url unless current_user.admin?
+                end
+                # admin?はカラム内の値が true か false か判定する
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    ・ビューの設定
+        ・ファイル名は 名前空間名/コントローラ名/アクション.html.erb
+□ デバックツール
+    ・準備
+        ・開発環境ならば、開発、テストgem下にgem 'pry-byebug'を入れて適応
+        ・初期データをseed.rbファイルに投入し適応
+        （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            3.times do |i|
+              Post.create!(title: "タイトル#{i}", content: "内容#{i}")
+            end
+            puts "初期メッセージを3個追加しました。"
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          rails db:seed
+    
+    ・デバック挿入
+        ・binding.pry を処理を止めて確認したい位置に挿入
+
+    ・デバックの確認
+        ・ ターミナル上でやりたい処理を書く
+
+    ・デバックの中断
+        ・control + D もしくはexitで中断
+
+□ 画像投稿機能
+    ・準備
+        ・【テーブルカラム準備】画像を保存するカラムを準備（属性は string）※カラム名は自由
+        ・【Gem準備】gemfileにて gem 'carrierwave', '~> 2.0'を適応
+        ・【ファイル準備】画像投稿に必要なファイル（app/uploaders/image_uploader.rb ）を生成するために、
+        rails g uploader Image をターミナルで実行。
+        ・【連携】作成された image_uploader.rb のクラス ImageUploader と posts テーブルの image カラムを連携
+
+    ・画像の投稿方法
+        ・form_withヘルパーメソッド内で、file_fieldメソッドを使用
+        （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            form_with model: @post, local: true do |f|
+              f.file_field :image
+            end
+            ＃コントローラでもパラメータの値を取れるように設定しておく
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    ・画像の表示
+        ・ image_tag モデル名.カラム名.urlで表示できる
+        （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            if @post.image?
+              image_tag @post.image.url
+            end
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    ・保存場所
+        ・開発環境の場合 public/uploads/ に捕残される
+        ・GitHubにpushした場合、保存画像もpushすることになるので、gitignoreを使用
+            ・gitignoreでの記述
+                ・/public/uploads/
+
+    ・デフォルト画像の設定
+        ・app/uploaders/image_uploader.rbファイルにてdefault_url メソッドの箇所をコメントアウト
+        （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              # 次の箇所のコメントアウトを解除
+              def default_url(*args)
+                # For Rails 3.1+ asset pipeline compatibility:
+                # ActionController::Base.helpers.asset_path("fallback/" + [version_name, "default.png"].compact.join('_'))
+
+                "/images/fallback/" + [version_name, "default.png"].compact.join('_')
+              end
+
+        ・デフォルト画像にしたい画像を public/images/fallback 作成後ディレクトリに移動させ、ファイル名をdefault.pngに変更
+
+
+    ・画像ファイルサイズのバリデーション
+        ・image_uploader.rb にsize_rangeメソッドを追加
+        （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              def size_range
+                0..5.megabites
+              end
+              ＃クラスのインスタンスメソッドなので、一番最後のendより上に追記
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    
+    ・画像ファイルの加工（gem "mini_magick と imagemagick）が必要
+        ・imagemagick のインストール方法
+            ・brew install imagemagick）が必要
+            ・brew link --force imagemagick
+            を実行
+
+        ・サムネイル画像の作成
+        ・画像サイズの変更
+        ・画像のファイル形式を変更
+        
+
+
+□ Rakeタスク
+    ・重要コマンド
+        ・rake -T
+        ・rails g task 名前空間用タスク名
+
+
+    ・ タスクの定義方法手順
+        1. rails g task 名前空間用タスク名
+            結果  lib/tasks/名前空間タスク名.rake ファイルが生成される
+        2. lib/tasks/名前空間タスク名.rake ファイル内にて
+          namespace :名前空間タスク名 do
+            desc "タスクの説明"
+            task タスク名: :environment do
+              実行したい処理
+            end
+          end
+          （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            namespace :greet do
+              desc "挨拶練習"
+              task hello: :environment do
+                puts "こんにちは"
+              end
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        # rake -T
+          上記のタスクが追加されているか確認
+          （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            rake greet:hello
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        3. ターミナル上で上記のタスクを入力
+
+
+
+
+
+
+
+□ CSVインポート（開発者用）
+□ Ajax通信の利用
+    ・基本
+        Asynchronous JavaScript And XML
+
+
+
+    ・削除機能のAjax通信
+        ※ rails-ujsのおかげで、remote: true のついたa要素の通信が成功したとき、ajax:successというイベントを発行する。
+
+        1.Ajax通信のMVCでの適応
+            ビューのlink_toヘルパーメソッドにremote: trueを追加
+            コントローラのページ偏移を一部起こしたいアクションに head :no_content を追加
+            （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              def destroy
+                @task.destroy
+                head :no_content
+              end
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        2.JavaScript を用いて処理
+            JavaScriptにクラスを渡せるように aタグにクラス属性を付加させる
+            （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              document.addEventlistener("turbolinks:load", function(){
+                document.querySelectorAll(".delete").forEach(function(a){
+                  a.addEventlistener("ajax:success", function(){
+                    削除項目の指定
+                    element.style.display = "none";
+                  });
+                });
+              });
+
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+□
+□
+□
+□
+
+
+□ SJR通信の利用
+□ ログ

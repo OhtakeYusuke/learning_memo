@@ -1,0 +1,30 @@
+~~~~~~~文字実態参照~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	&nbsp;	      …  &hellip;    	−	&minus;
+€	&euro;	      §	&sect;	      ±	&plusmn;
+¢	&cent;	      ¶	&para;	      √	&radic;
+£	&pound;	      †	&dagger;    	∞	&infin;
+¥	&yen;	        ‡	&Dagger;    	∝	&prop;
+©	&copy;    	  ‘	&lsquo;	      ×	&times;
+®	&reg;	        ’	&rsquo;	      ÷	&divide;
+™	&trade;	      ‚	&sbquo;	      ∼	&sim;
+<	&lt;	        “	&ldquo;     	≈	&asymp;
+>	&gt;      	  ”	&rdquo;	      ≅	&cong;
+‹	&lsaquo;  	  „	&bdquo;     	≡	&equiv;
+›	&rsaquo;  	  ¬	&not;	        ≤	&le;
+«	&laquo;	      ¦	&brvbar;    	≥	&ge;
+»	&raquo;	      ¯	&macr;	      ≠	&ne;
+“	&quot;	      ∴	&there4;    	′	&prime;
+&	&amp;	        ∩	&cap;	        ″	&Prime;
+µ	&micro;	      ∪	&cup;       	↵	&crarr;
+‾	&oline;	      ∧	&and;	        ↑	&uarr;
+⁄	&frasl;   	  ∨	&or;	        ↓	&darr;
+°	&deg;	        ∈	&isin;	      ←	&larr;
+º	&ordm;     	  ∉	&notin;     	→	&rarr;
+ª	&ordf;	      ∋	&ni;	        ↔	&harr;
+¹	&sup1;	      ∠	&ang;	        ⇑	&uArr;
+²	&sup2;	      ♠	&spades;    	⇓	&dArr;
+³	&sup3;	      ♣	&clubs;     	⇐	&lArr;
+¼	&frac14;  	  ♦	&diams;     	⇒	&rArr;
+½	&frac12;  	  ♥	&hearts;    	⇔	&hArr;
+¾	&frac34;  	  —	&mdash;	      –	&ndash;

@@ -1,0 +1,261 @@
+□ 既存のテストの削除
+  ・ rm -r ./test
+
+□ RSpec
+    1. GemFile test直下に  gem "rspec-rails", "->バージョン"
+    2. ターミナルにて rails g rspec:install
+    3. ターミナルにて rails g rspec:model モデル名（例 User）
+
+    ・ 準備
+        ・ .rspecを次に置換する
+              # 次は削除
+              # --require spec_helper
+
+              # rails_helperを読み込む
+              --require rails_helper
+              # 出力結果をドキュメント風にして見やすくする
+              --format documentation
+              # 出力結果を色分けする
+              --color
+        
+        ・ config/initializers/generators.rb を生成して、ジェネレータ使用時のファイルの生成を設定
+            （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                Rails.application.config.generators do |g|
+                  g.skip_routes true
+                  g.assets false
+                  g.helper false
+                  g.test_framework :rspec,
+                                  fixtures: true,
+                                  view_specs: false,
+                                  routing_specs: false,
+                                  helper_specs: false,
+                                  controller_specs: false,
+                                  request_specs: true
+                end
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        ・  テストが途中で失敗しても終了せず、最後までテストを実行して失敗したテストをリストアップする設定
+              RSpec.configure do |config|
+                # ***** 以下を追加 *****
+                config.define_derived_metadata do |meta|
+                  meta[:aggregate_failures] = true unless meta.key?(:aggregate_failures)
+                end
+                # ***** 以上を追加 *****
+              end
+
+        ・  
+
+    ・ 実行コマンド
+        ・ bundle exec rspec テスト用ファイル名
+
+□ Capybara（システムテスト用）
+    1. デフォルトでGemFileに入っている Capybara を有効化
+    2.spec/spec_helper.rb にドライバ設定（HeadlessChromeを推奨）
+    (例)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        require "capybara/rspec"
+          RSpec.configure do |config｜ 【既に記述済】
+              config.before(:each, type: :system) do
+                  driven_by :selenium_chrome_headless
+              end
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+□ FactoryBot
+    1. GemFile development,:test直下に gem "factory_bot_rails"
+    2. spec/factories/テーブル名.rb 作成して、データの作成
+
+        FactoryBot.define do
+          factory :ファクトリー名 do
+          ＃  ファクトリー名はモデル名にしておいたほうがいいかもしれない
+            カラム名 { Fakerなどで値を作成 }
+                  ・・・
+                  ・・・
+            外部キーがある場合は ファクトリー名 を記述
+          end
+        end
+    (例)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        FactoryBot.define do
+          factory :user do
+            name { Faker::Name.name }
+            age { rand(18..65) }
+            email { Faker::Internet.email }
+          end
+        end
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    3. FactoryBotの動作確認を railsコマンド で確認
+        ・もしKeyError (Factory not registered: "ファクトリー名")が出た場合は
+          config/application.rb ファイルに
+          config.factory_bot.definition_file_paths = ["spec/factories"] を記述する
+
+        ・コマンド操作
+            ・build(:ファクトリー名, オプション)でそのファクトリー名（モデル）のインスタンス生成
+            ・create(:ファクトリー名, オプション)でそのファクトリー名（モデル）のインスタンス生成と保存
+                ・オプション
+                  ・外部ID: 外部IDを持ったインスタンス     モデル関連づけでの外部IDづけ   
+                  ・カラム名: 値                        代わりに代入できる
+            ・create_list(:ファクトリー名, 個数, オプション)
+                  ・個数  数字分だけインスタンスを生成
+    
+
+    ＃  FactoryBot の省略を設定
+        spec/rails_helper.rbファイルに include FactoryBot::Syntax::Methods を記述
+        (例)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              RSpec.configure do |config|
+                # ***** 一番上に追加 *****
+                # 使用する際に FactoryBot を省略できるようにする
+                config.include FactoryBot::Syntax::Methods
+              end
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    
+□ Faker
+    ・ Fakerの導入
+        1. GemFile development,:test直下に  gem 'faker'
+        2. 値を使用したい部分に Faker::グループ名１(頭文字は大文字).グループ名２
+    
+    ・ Fakerの日本語化
+        ・ spec/rails_helper.rb ファイルの require "rspec/rails" 直下で
+            Faker::Config.locale = :ja
+
+    ・ FactoryBotの呼び出し
+        ・FactoryBot.呼び出し系コマンド（ :ファクトリー名）
+
+
+
+□ SystemSpec
+
+    ・ 便利メソッド
+        ・ visit URL
+        ・ fill_in "name属性名", with: "入力内容"
+        ・ click_button "表示ボタン"
+
+    ・ マッチャ
+        ・expect(page).to
+        ・have_content 期待値
+        ・have_no_content 期待値
+        ・
+        ・
+
+□ ModelSpec
+
+    ・モデルスペックのモデルごとのファイルを準備する
+    （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        spec/models/モデル名_spec.rb
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    ・モデルスペックのみ実行
+      bundle exec rspec spec/models
+
+    ・必要なテストをピックアップする
+    （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          データが条件を満たすとき
+              保存できる
+              name が空のとき
+              エラーが発生する
+              name が31文字以上のとき
+              エラーが発生する
+              age が空のとき
+              エラーが発生する
+              age が文字列のとき
+              エラーが発生する
+              age が文字列のとき
+              エラーが発生する
+              age が151以上のとき
+              エラーが発生する
+              age が負の整数のとき
+              エラーが発生する
+              email が空の時
+              エラーが発生する
+              email がすでに存在するとき
+              エラーが発生する
+              email が 256文字以上のとき
+              エラーが発生する
+              email が アルファベット･英数字 のみのとき
+              エラーが発生する
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    ・基本型
+    （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+          require "rails_helper"
+          RSpec.describe モデル名, type: :model do
+            describe "対象" do
+              context "条件" do
+                it "期待する結果" do
+                  テスト内容
+                end
+              end
+            end
+          end
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    ・便利機能
+        ・subject {メソッド}  チェーンメソッドの代入
+
+    ・マッチャ
+        ・change  中括弧を使用していることに注意
+            expect{ X }.to change{ Y }.from(A).to(B)  「X すると Y が A から B に変わることを期待する」
+            expect{ X }.to change{ Y }.by(A)          「X すると Y が Aに変わることを期待する」
+
+
+□ RequestSpec
+    ＃ HTTPレスポンスステータスコードを理解しておく
+    ＃ リクエストが成功されることを確認
+        主題は  URLリクエスト（例）get（users_path）
+    ＃ 表示内容を確認
+    ＃ 保存の確認は changeマッチャを使用する
+
+    ・リクエストスペックのコントローラごとのファイルを準備する
+    （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        spec/requests/コントローラ名_request_spec.rb
+
+    ・リクエストスペックのみを実行する場合
+        bundle exec rspec spec/requests
+
+    ・基本型
+    （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          require 'rails_helper'
+
+          RSpec.describe "Users", type: :request do
+            describe "GET #index" do
+              it "リクエストが成功する" do
+                create_list(:user, 3)
+                get(users_path)      
+                expect(response).to have_http_status(:ok)
+                # :ok は 200でも書くことができる
+                # リダイレクト時は  302
+              end
+            end
+          end
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+    ・便利機能
+      ・get（URLパス） （例）get(users_path)
+      ・post (URLパス, params:{ モデル名: attributes_for(:ファクトリー名) })      
+                                ※  paramsの中身（二重のハッシュ）になっている
+      ・patch (URLパス, params:{ モデル名: attributes_for(:ファクトリー名) })      
+                                ※  paramsの中身（二重のハッシュ）になっている
+      ・expect( response )  HTTPリクエストステータスコードのレスポンス判定ができる
+      ・expect( response.body )  HTTPリクエストで返ってきたカラムの値を確認する response.body
+      
+
+
+    ・マッチャ
+      ・have_https_request(:ok)           response に対して httpリクエストが正常にレスポンスされたことを確認する
+      ・redirect_to モデルオブジェクト       expect(response)で返ってきた response先が redirectされた場合に使用できる
+      ・redirect_to ( urlパス )            expect(response)で返ってきた response先が redirectされた場合に使用できる
+      ・既存データからの更新時の change
+        （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              ＃ Userインスタンスの emailの更新の場合 
+              it 'email が更新される' do
+                origin_email = user.email
+                new_email = params[:user][:email]
+                expect { subject }.to change { user.reload.email }.from(origin_email).to(new_email)
+              end
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+□
+□
+□
+□

@@ -1,0 +1,154 @@
+□ ActionCable
+    ・基本設定の準備
+        ・チャットのためのモデル、コントローラ、チャネル、ルーティングを生成＆設定
+            ・チャネルの生成でフロントエンド、バックエンドのファイルを生成
+                rails g channel チャンネル名  メソッド名
+                （例）rails g channel Room speak
+
+            ・ActionCable のルーティング有効化設定
+                mount ActionCable.server => "/cable"
+
+    ・フロントエンドの設定（チャンネル名_channel.jsファイル）
+            （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                import consumer from "./consumer"
+
+                const appRoom = consumer.subscriptions.create("RoomChannel", {
+                  connected() {                    
+                  },
+
+                  disconnected() {    
+                  },
+
+                  received(data) {
+                    const messages = document.getElementById('messages');
+                    messages.insertAdjacentHTML('beforeend', data['message']);
+                  },
+
+                  speak: function(message１) {
+                    ＃  連想配列のプロパティがバックエンドのdataを導く因子になっている
+                    return this.perform('speak', {messagesss: message１});
+                  }
+                });
+
+                window.addEventListener("keypress", function(e) {
+                  if (e.keyCode === 13) {
+                    appRoom.speak(e.target.value);
+                    e.target.value = '';
+                    e.preventDefault();
+                  }
+                })
+
+                document.addEventListener("turbolinks:load", function(){
+                  const submit = document.getElementById("submit");
+                  const chat = document.getElementById("chat-field");
+                  submit.addEventListener("click", function(e){
+                    appRoom.speak(chat.value);
+                    chat.value = "";
+                    e.preventDefault();
+                  })
+                })
+
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+    ・バックエンドの設定（チャンネル名_channel.rbファイル）
+            （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                class RoomChannel < ApplicationCable::Channel
+                
+                #  フロントエンドとバックエンドが接続された時に発火
+                  def subscribed
+                #  stream_from "チャンネル名_room"で同一ファイル名のchannelを接続する
+                    stream_from "room_channel"
+                  end
+
+                #  フロントエンドとバックエンドが接続解除時に発火
+                  def unsubscribed
+                  end
+
+                #  フロント側から送られてくるデータを受け取る
+                  def speak(data)
+                  # フロントエンドから送られてくるので、シンボルではなく[""]で囲んでいる
+                  仮引数dataは、フロントから送られてくる値の内”messagesss”をプロパティ（キー）が実引数となって入ってくる
+                    Message.create! content: data['messagesss']
+                  end
+                end
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            message1がmessagesssをキー（プロパティ）としてdataという形で格納されてバックエンドにやってくる    (イメージ)data{messagesss: target.value}
+
+
+    ・ビューの設定
+            （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                <h1>Chat room</h1>
+                <div id='messages'>
+                #   インスタンス複数内蔵の部分テンプレート
+                  <%= render @messages %>
+                </div>
+
+                <form>
+                  <label>Say something:</label><br>
+                  <input type="text" data-behavior="room_speaker">
+                </form>
+
+                ==== 部分テンプレート ===============
+                views/messages/_message.html.erb ファイル
+                <div class="message">
+                  <p><%= message.content %></p>
+                </div>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+    ・モデルの設定（保存後の動き）
+            （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                class Message < ApplicationRecord
+                #   メッセージ保存後のモデルでの動き
+                    ActionJobのperformメソッドを呼び出している
+                  after_create_commit { MessageBroadcastJob.perform_later self }
+                  この引数selfは今回保存されたモデルオブジェクトそのもの（モデルオブジェクトのカラムではないことに注意）
+                end
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    ・Active Job の生成と設定
+
+            （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  rails g job MessageBroadCast  でapp/jobs/message_broadcast_job.rb ファイル生成後
+            
+                class MessageBroadcastJob < ApplicationJob
+                  queue_as :default
+
+                #   登録したいJobを下記に記載する
+                  def perform(message)
+                #   ブロードキャスト設定 と メッセージの挿入の呼び出し
+                    ActionCable.server.broadcast 'room_channel', message: render_message(message)
+                  end
+
+                  private
+                #   メッセージの挿入
+                  def render_message(message)
+
+                    #   コントローラのアクションの影響を受けずに、ビューに部分テンプレートを発生させる場合に使用する
+                    ApplicationController.renderer.render(partial: 'messages/message', locals: { message: message })
+                  end
+                end
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    ・current_user を認証させる方法
+                connection.rb ファイルにて下記の記述
+            （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                identified_by :current_user
+
+                def connect
+                  self.current_user = find_verified_user
+                end
+
+                protected
+                def find_verified_user
+                  verified_user = User.find_by(id: env['warden'].user.id)
+                  return reject_unauthorized_connection unless verified_user
+                  verified_user
+                end
+
+                ＃  devise作成時には下記の記載がなくても動いた
+                def session
+                  cookies.encrypted[Rails.application.config.session_options[:key]]
+                end               
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
