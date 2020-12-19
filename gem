@@ -35,6 +35,7 @@
 
 
 ・  kaminari
+・  gem "dotenv-rails"
       # ページネーション
         gem "kaminari"
 
