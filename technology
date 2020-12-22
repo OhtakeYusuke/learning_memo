@@ -879,7 +879,6 @@
 
 
 
-□ CSVインポート（開発者用）
 □ Ajax通信の利用
     ・基本
         Asynchronous JavaScript And XML
@@ -935,7 +934,14 @@
               ENV['SERCRET']
           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    ・関連コントローラファイル内に、GoogleAPI各種の外部ライブラリ、インスタンスの生成、APIキーの登録をする
+    ・関連コントローラファイル内に
+        GoogleAPI各種の外部ライブラリ
+          require "google/apis/foo"
+        インスタンスの生成
+          Google::Apis::foo::foo・・・
+        APIキー
+        の各種登録
+
   （例）~~~~~YoutubeV3の場合~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # YoutubeV3の外部キー
     require 'google/apis/youtube_v3'
@@ -945,10 +951,44 @@
     # 環境変数に設定した秘密鍵を定義
     youtube.key = ENV['GOOGLE_API_KEY']
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-□
+□ Youtube動画の埋め込み
+  ・データベースの設計
+      youtube_url:string  Youtubeの各動画のURL本体
+      youtube_id:string   Youtubeの各動画に含まれる11桁のid
+
+  ・コントローラの設定
+      Youtubeの各動画のURLに振り分けられている下１１桁のIDを取り出す
+      （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          @youtube = Youtube.new(youtube_params)
+          yt_url = params[:youtube][:youtube_url]
+          @youtube.youtube_id = yt_url.last(11)
+          @youtube.save
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      Youtubeの動画のパラメーター送信は
+        params{モデル名: {body: foo0, youtube_url: foo1}}
+
+  ・ビューの設定
+      iframeタグを用いて src属性に 埋め込み型のURLを埋め込む
+        src="https://www.youtube.com/embed/11桁のID"
+            iframeのオプション
+              ・allow
+                  ・fullscreen;
+                  ・accelerometer;
+                  ・autoplay;
+                  ・encrypted-media;
+                  ・gyroscope;
+                  ・picture-in-picture
+              
+              ・allowfullscreen
+      （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/<%= @post.youtube_url%>" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 □
 □
 
 
 □ SJR通信の利用
 □ ログ
+□ CSVインポート（開発者用）
