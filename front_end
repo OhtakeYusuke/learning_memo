@@ -283,5 +283,48 @@
           const lineLabel = gon.chart_label
           const lineData = gon.chart_data
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-□
-□
+□ Tweet共有
+    基本形
+        https://twitter.com/tweet?が基本形
+
+    オプション
+        基本形
+        &オプション名=値
+
+        オプション
+            ・text
+            ツイートの本文
+
+            ・hashtags
+            ハッシュタグの追加
+
+        よく一緒に使うlink toのオプション
+            ・image_tag
+            （例）image_tag("フォルダの置いてあるパス")
+
+            ・target="_blank"
+
+    （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        https://twitter.com/intent/tweet?text=Hello&hashtags=test
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+□ ファビコンの設定
+    applicationファイル内に <%= favicon_link_tag "画像のURL"%>
+    （例）<%= favicon_link_tag 'default.png' %>
+
+□ 
+□ 
+□ 
+□ 
+□ 
+□ 
+□ 
+□ 
+□ 
+□ 
+□ 
+□ 
+□ 
+□ 
+□ 

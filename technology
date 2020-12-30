@@ -985,8 +985,59 @@
       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-□
-□
+□ metaタグ・OGP設定
+    基本
+        OGP（Open Graph Procotol）はSNSでシェアした際に、設定したWEBページのタイトルや画像を正しく伝えるためのhtml要素
+
+    準備
+        metaタグ生成に便利なgem meta-tagsを使用する
+        gem meta-tags
+
+    ヘルパーでの設定
+        デフォルトのメタタグを作成するためにヘルパーメソッドにデフォルトを作成しておく
+        （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            def default_meta_tags
+              {
+                site: 'サイト名',
+                title: 'タイトル',
+                reverse: true,
+                separator: '|',
+                description: 'ディスクリプション',
+                keywords: 'キーワード',
+                og: {
+                  site_name: 'サイト名',
+                  title: 'タイトル',
+                  description: 'ページの説明', 
+                  type: 'website',
+                  url: request.url,
+                  image: image_url('イメージ画像のURL'),
+                },
+                twitter: {
+                  card: 'カードの種類'summary_large_image,
+                  site: '@Twitterのアカウント名',
+                }
+                fb: {
+                  app_id: '¥facebookのID'
+                }
+              }
+            end
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      
+    ビューでの設定
+        ・applicationファイルのhaedタグ内
+            <%= display_meta_tags(default_meta_tags) %>
+    
+        ・各ビューファイルでの先頭
+            set_meta_tagsを使用する
+            （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            <% set_meta_tags title: 'タイトル変更', description: 'ディスクリプション変更' %>
+□ 
+□ 
+□ 
+□ 
+□ 
+□ 
+□ 
 
 
 □ SJR通信の利用

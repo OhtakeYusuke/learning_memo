@@ -14,33 +14,85 @@
   ・git push master ブランチ名
       ・ブランチ名を HEAD にすると現在のブランチの最新がプッシュされるようになる
 
+□ Heroku
+    ・アプリの準備
+        ・トップページの設定をしていること
+        ・本番環境のデータベースがPostgresqlであること
+        ・公開するアプリをGitのmasterブランチにコミット済であること
+        ・（自動デプロイしたい場合は）リモートリポジトリにプッシュ済であること
+
+    ・マイグレーション の自動化
+        ・Procfileを作成しておく  （例）touch Procfile
+        ・マイグレーションファイルの自動化を記述しておく  （例）release: bin/rails db:migrate
+
+    ・デプロイの準備
+        ・heroku create アプリ名 でheroku上に作成（このときリモート名herokuが自動生成される）
+
+    ・Herokuへのデプロイ
+        ・git push heroku master でHerokuへデプロイ
+        （heroku open でブラウザでアプリが見られる）
+
+    ・Papertrailの導入
+        Papertrailとは、herokuアプリが出力するログを管理するアドオン（add-on）
+        
+        ・Papertrailのアプリへの導入方法
+            heroku addons:create papertrail:choklad
+        ・Paprtrailの起動方法（ターミナル）
+            heroku addpns:open papertrail
+        ・Paprtrailの起動方法（web）
+            ダッシュボードで操作
+      
+    ・パイプラインの導入
+        いわゆる「ステージング環境」を準備すること
+
+        ・ステージング環境の準備
+            Step0 herokuが本番環境で作成されていたら一旦削除する （例）git remote rm heroku
+            Step1 ステージング環境の作成  （例）heroku create sammple-staging
+                  このとき「ステージング環境」のアプリ名は アプリ名-stagingにしておくと良い
+                  git push heroku master は「ステージング環境」へのデプロイに変化する
+            Step2 papertrailも「ステージング環境」に合わせる
+                  （例）heroku addons:create papertrail -a sample-staging
+                  ステージング環境でアプリ名を入れるときはオプション -a アプリ名を指定して使う（-aは-appの省略系）
+
+        ・パイプラインの構築
+            Step1 Web上でHerokuのダッシュボードにアクセス
+            【注意】初回ならConnect to GitHub で認証をする
+            Step2 アプリ名をつける（例） sample-pipeline
+            Step0 (自動デプロイするなら)Connect to GitHub の項目でGitHubの項目を検索してConnectする
+            Step3 Create Pipeline
+            Step4 STAGING PRODUCTION それぞれにアプリを選択
+            heroku pipelines:open パイプライン名  でパイプラインをブラウザで開くことができる
+
+            パイプライン構築後の注意
+                パイプライン構築後にはHerokuには「ステージング環境」と「本番環境」の２つのアプリが存在しているので
+                herokuコマンドを使用するときは、 -a アプリ名 オプションをつけて指定すること
+
+        ・パイプラインから本番環境への移行（プロモート）
+            STAGINGにあるPromote to Productionボタンをクリックすることで本番環境に反映できる
+            【注意】この移行前に本番環境に直接プッシュしておくとプロモート時にエラーがなくなるらしい
+
+    ・自動デプロイの設定
+        パイプラインのページでSTAGINGのアプリを選択
+        Deployタブを開いてAutomatic deploys を  Enable Automatic Deploys
 
 
-  ・github プルリク時のサンプル文章
-        【注意】サンプル定型文の不要な文言は削除してプルリクを出して下さい
 
-        ## 実装内容
+    ・Herokuから消す
+        ・web上で消す
+            Step1 Herokuダッシュボード上のSettingでDeleteAppを実行
+            Step2 gitのリモートリポジトリにHerokuが設定されているので消す
+                  git remote Heroku
 
-        【補足】原則，以下のようなマークダウン記法のリストで記載すること
+        ・herokuコマンドで消す
+            Step1 heroku apps:destroy --app アプリ名
+                  これでHeroku上のアプリとgitとの連携が切れる
+                  ここで --confirm アプリ名 を入れると確認は取られない
 
-        - 「messages」のCRUD処理を実装
-          - 一覧表示機能
-          - 詳細表示機能
-          - 新規投稿機能
-          - 編集機能
-          - 削除機能
-
-        ## チェックリスト
-
-        【補足】プルリクを出した後，クリックでチェックを入れて下さい。
-
-        - [ ] GitHub で Files changed を確認
-        - [ ] 影響し得る範囲のローカル環境での動作確認
-
-        ## 参考
-
-        - [テキスト教材「resources を使ったCRUD処理の実装」](https://arcane-gorge-21903.herokuapp.com/texts/214)
-
-        ## 備考
-
-        【補足】必要がなければ不要です
+□ 
+□ 
+□ 
+□ 
+□ 
+□ 
+□ 
+□ 
