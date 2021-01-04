@@ -313,7 +313,14 @@
     applicationファイル内に <%= favicon_link_tag "画像のURL"%>
     （例）<%= favicon_link_tag 'default.png' %>
 
-□ 
+□ スクロールしながらの固定
+    基本
+        display: sticky;
+        top left right bottom のいずれか
+
+    固定したいセレクターに display: sticky; を挿入しておくことで、そのセレクターが指定に指定した高さになったら固定される
+
+    
 □ 
 □ 
 □ 
