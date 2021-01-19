@@ -321,10 +321,74 @@
     固定したいセレクターに display: sticky; を挿入しておくことで、そのセレクターが指定に指定した高さになったら固定される
 
     
-□ 
-□ 
-□ 
-□ 
+□ jQuery導入
+    １yarnで導入
+        yarn add jquery
+        ※ yarnはJavaScriptのパッケージマネージャー
+
+    2 config/webpack/environment.jsへの編集
+        （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        const webpack = require('webpack')
+        environment.plugins.prepend('Provide',
+            new webpack.ProvidePlugin({
+                $: 'jquery/src/jquery',
+                jQuery: 'jquery/src/jquery'
+            })
+        )
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    3 application.js にjqueryと該当ファイルを書き込む
+        （例）~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            require("jquery")
+            require("slick.js")
+            ※作成したファイルはJavaScriptディレクトリ直下に置く
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+□ スムーススクロールの作成方法
+  
+  1. jQuery導入
+    方法は上記の導入参照
+
+  2. scroll.jsをjavascriptディレクトリ直下に設置
+    このときapplication.jsにも require(scroll.js)を記述
+
+  3. scroll.js内にjQueryで記述
+    $(function(){
+      console.log("スクロール確認");
+
+      // #で始まるリンクをクリックしたら実行される。
+      $('a[href^="#"]').click(function() {
+
+        console.log("スクロールクリック確認");
+
+        // スクロールの速度
+        const speed = 400; // ミリ秒で記述 ここで定義している
+        const href= $(this).attr("href");
+        const target = $(href == "#" || href == "" ? 'html' : href);
+        const position = target.offset().top;
+        $('body,html').animate({scrollTop:position}, speed, 'swing');
+
+        ここでリンクを踏んでもURLに#ハッシュがつかないようにしている
+        return false;
+      });
+    });
+
+
+
+□ アセットパイプライン（background-image）
+    本番環境ではローカルでのbackground-image:url(  );は表示されない
+
+    【正】
+    background-image: image-url("   ");
+
+
+
+□ Railsでのアンカー
+
+  link_toにanchorを入れる
+  （例）link_to "リンク名", path(anchor: "リンク先ID")
+    このとき#は必要ないことに注意
+    
 □ 
 □ 
 □ 
